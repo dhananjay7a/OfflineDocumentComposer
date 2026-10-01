@@ -21,13 +21,6 @@ A high-performance, **100% offline, privacy-first Android document workspace**. 
 ## 📥 Download & Installation
 
 - **Pre-built Release APK**: [`app/release/DocStudio.apk`](app/release/DocStudio.apk) (Ready to install on any Android phone running Android 8.0+)
-- **Full User Manual Presentation**: [`Offline_Document_Composer_User_Manual.pptx`](Offline_Document_Composer_User_Manual.pptx) (14-slide executive presentation)
-
-### Quick Install via ADB:
-```bash
-adb install -r app/release/DocStudio.apk
-```
-*Or simply copy `DocStudio.apk` to your phone and tap to install.*
 
 ---
 
