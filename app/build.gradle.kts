@@ -1,3 +1,6 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -22,11 +25,37 @@ android {
         }
     }
 
+    val keystorePropertiesFile = rootProject.file("local.properties")
+    val keystoreProperties = Properties().apply {
+        if (keystorePropertiesFile.exists()) {
+            load(FileInputStream(keystorePropertiesFile))
+        }
+    }
+
+    signingConfigs {
+        create("release") {
+            val keyPath = keystoreProperties.getProperty("RELEASE_STORE_FILE")
+                ?: "C:/Users/Hp/Documents/keyPass/android-key-pass"
+            val keyFile = file(keyPath)
+            if (keyFile.exists()) {
+                storeFile = keyFile
+                storePassword = keystoreProperties.getProperty("RELEASE_STORE_PASSWORD", "123456")
+                keyAlias = keystoreProperties.getProperty("RELEASE_KEY_ALIAS", "key0")
+                keyPassword = keystoreProperties.getProperty("RELEASE_KEY_PASSWORD", "123456")
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
-            signingConfig = signingConfigs.getByName("debug")
+            val releaseSigning = signingConfigs.findByName("release")
+            signingConfig = if (releaseSigning?.storeFile?.exists() == true) {
+                releaseSigning
+            } else {
+                signingConfigs.getByName("debug")
+            }
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
