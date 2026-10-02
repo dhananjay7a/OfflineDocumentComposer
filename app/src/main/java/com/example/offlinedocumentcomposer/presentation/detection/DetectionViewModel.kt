@@ -66,6 +66,11 @@ class DetectionViewModel : ViewModel() {
         _state.value = _state.value.copy(corners = updated, detected = false, confidence = 0f, errorMessage = null)
     }
 
+    fun setCorners(newCorners: List<PointF>) {
+        if (newCorners.size != 4) return
+        _state.value = _state.value.copy(corners = newCorners, detected = false, confidence = 0f, errorMessage = null)
+    }
+
     fun reportInvalidCrop() {
         _state.value = _state.value.copy(errorMessage = "Keep four corners inside the image without crossing edges.")
     }

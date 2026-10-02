@@ -37,6 +37,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
@@ -666,105 +667,120 @@ fun PdfResizerScreen(
                         .padding(horizontal = 16.dp, vertical = 12.dp),
                     verticalArrangement = Arrangement.spacedBy(14.dp)
                 ) {
-                    // 1. Live Visual Preview Card with Multi-Page Navigation
+                    // 1. First-Page Document Thumbnail Card
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surface
+                        ),
                         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                     ) {
-                        Column(modifier = Modifier.padding(12.dp)) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(220.dp)
-                                    .clip(RoundedCornerShape(10.dp))
-                                    .background(Color(0xFF0F172A)),
-                                contentAlignment = Alignment.Center
+                        Column(modifier = Modifier.padding(14.dp)) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(14.dp),
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                if (preview != null) {
-                                    Image(
-                                        bitmap = preview.asImageBitmap(),
-                                        contentDescription = "PDF Preview Page",
-                                        modifier = Modifier.fillMaxSize(),
-                                        contentScale = ContentScale.Fit
-                                    )
-                                } else {
-                                    SafeLoadingSpinner(size = 32.dp)
-                                }
-
-                                if (state.isRenderingPreview) {
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxSize()
-                                            .background(Color.Black.copy(alpha = 0.35f)),
-                                        contentAlignment = Alignment.Center
-                                    ) {
+                                // High-Res Page 1 Cover Thumbnail Container
+                                Box(
+                                    modifier = Modifier
+                                        .size(width = 96.dp, height = 130.dp)
+                                        .shadow(6.dp, RoundedCornerShape(8.dp))
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(Color(0xFF0F172A))
+                                        .border(1.dp, Color(0xFF334155), RoundedCornerShape(8.dp)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    if (preview != null) {
+                                        Image(
+                                            bitmap = preview.asImageBitmap(),
+                                            contentDescription = "PDF First Page Thumbnail",
+                                            modifier = Modifier.fillMaxSize(),
+                                            contentScale = ContentScale.Fit
+                                        )
+                                    } else {
                                         SafeLoadingSpinner(size = 24.dp)
+                                    }
+
+                                    // Page 1 Bookmark Badge
+                                    Surface(
+                                        modifier = Modifier
+                                            .align(Alignment.TopStart)
+                                            .padding(4.dp),
+                                        shape = RoundedCornerShape(4.dp),
+                                        color = Color(0xFF0284C7).copy(alpha = 0.9f)
+                                    ) {
+                                        Text(
+                                            text = "Page 1",
+                                            fontSize = 9.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color.White,
+                                            modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp)
+                                        )
                                     }
                                 }
 
-                                // Quick Change Button Overlay
-                                FilledTonalButton(
-                                    onClick = { launchPdfPicker() },
-                                    modifier = Modifier
-                                        .align(Alignment.BottomEnd)
-                                        .padding(8.dp)
-                                        .height(30.dp),
-                                    shape = RoundedCornerShape(8.dp),
-                                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp)
+                                // Document Information & Actions
+                                Column(
+                                    modifier = Modifier.weight(1f),
+                                    verticalArrangement = Arrangement.spacedBy(4.dp)
                                 ) {
-                                    Icon(Icons.Default.FolderOpen, contentDescription = null, modifier = Modifier.size(14.dp))
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Text("Change PDF", fontSize = 11.sp)
-                                }
+                                    Text(
+                                        text = meta.fileName,
+                                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                                        maxLines = 2,
+                                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                                    )
 
-                                // Multi-Page Navigation Pill Overlay
-                                if (meta.pageCount > 1) {
-                                    Surface(
-                                        modifier = Modifier
-                                            .align(Alignment.BottomCenter)
-                                            .padding(bottom = 8.dp),
-                                        shape = RoundedCornerShape(16.dp),
-                                        color = Color.Black.copy(alpha = 0.75f)
+                                    Row(
+                                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                        verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        Row(
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                        Surface(
+                                            shape = RoundedCornerShape(6.dp),
+                                            color = MaterialTheme.colorScheme.primaryContainer
                                         ) {
-                                            IconButton(
-                                                onClick = { vm.prevPage() },
-                                                enabled = state.currentPageIndex > 0,
-                                                modifier = Modifier.size(28.dp)
-                                            ) {
-                                                Icon(
-                                                    Icons.Default.ChevronLeft,
-                                                    contentDescription = "Previous Page",
-                                                    tint = if (state.currentPageIndex > 0) Color.White else Color.Gray,
-                                                    modifier = Modifier.size(18.dp)
-                                                )
-                                            }
-
                                             Text(
-                                                text = "Page ${state.currentPageIndex + 1} of ${meta.pageCount}",
-                                                fontSize = 11.sp,
-                                                fontWeight = FontWeight.Medium,
-                                                color = Color.White,
-                                                modifier = Modifier.padding(horizontal = 4.dp)
+                                                text = "${meta.pageCount} ${if (meta.pageCount == 1) "Page" else "Pages"}",
+                                                style = MaterialTheme.typography.labelSmall,
+                                                fontWeight = FontWeight.Bold,
+                                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                                             )
-
-                                            IconButton(
-                                                onClick = { vm.nextPage() },
-                                                enabled = state.currentPageIndex < meta.pageCount - 1,
-                                                modifier = Modifier.size(28.dp)
-                                            ) {
-                                                Icon(
-                                                    Icons.Default.ChevronRight,
-                                                    contentDescription = "Next Page",
-                                                    tint = if (state.currentPageIndex < meta.pageCount - 1) Color.White else Color.Gray,
-                                                    modifier = Modifier.size(18.dp)
-                                                )
-                                            }
                                         }
+
+                                        Surface(
+                                            shape = RoundedCornerShape(6.dp),
+                                            color = MaterialTheme.colorScheme.secondaryContainer
+                                        ) {
+                                            Text(
+                                                text = meta.formattedFileSize,
+                                                style = MaterialTheme.typography.labelSmall,
+                                                fontWeight = FontWeight.Medium,
+                                                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                            )
+                                        }
+                                    }
+
+                                    Text(
+                                        text = "Page Size: ${meta.firstPageWidth} × ${meta.firstPageHeight} pt",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+
+                                    Spacer(modifier = Modifier.height(2.dp))
+
+                                    FilledTonalButton(
+                                        onClick = { launchPdfPicker() },
+                                        shape = RoundedCornerShape(8.dp),
+                                        contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
+                                        modifier = Modifier.height(32.dp)
+                                    ) {
+                                        Icon(Icons.Default.FolderOpen, contentDescription = null, modifier = Modifier.size(14.dp))
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text("Change PDF", fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
                                     }
                                 }
                             }

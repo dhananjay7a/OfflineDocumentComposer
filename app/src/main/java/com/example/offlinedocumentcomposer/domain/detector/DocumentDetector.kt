@@ -79,8 +79,16 @@ class DocumentDetector {
             val grayMat = hold(Mat()).also { resources.add(it) }
             Imgproc.cvtColor(paddedSrc, grayMat, Imgproc.COLOR_RGBA2GRAY)
 
+            val clahe = Imgproc.createCLAHE(2.0, Size(8.0, 8.0))
+            val equalizedGray = hold(Mat()).also { resources.add(it) }
+            clahe.apply(grayMat, equalizedGray)
+
             val blurred = hold(Mat()).also { resources.add(it) }
-            Imgproc.GaussianBlur(grayMat, blurred, Size(3.0, 3.0), 0.0)
+            if (!live) {
+                Imgproc.bilateralFilter(equalizedGray, blurred, 7, 50.0, 50.0)
+            } else {
+                Imgproc.GaussianBlur(equalizedGray, blurred, Size(3.0, 3.0), 0.0)
+            }
 
             // Do not remove boundaries based on skin color. Cards and backgrounds overlap that range.
             val skinMask = Mat.zeros(paddedSrc.size(), CvType.CV_8UC1).also { resources.add(it) }
@@ -142,7 +150,7 @@ class DocumentDetector {
             allCandidates.addAll(runCannyPass(blurred, skinMask, totalArea, paddedW, paddedH, useOtsu = false, fixedLow = 20.0, fixedHigh = 75.0))
 
             // Pass 5: Morphological Gradient (additional candidates under uneven lighting)
-            if (!live) allCandidates.addAll(runMorphGradientPass(grayMat, skinMask, totalArea, paddedW, paddedH))
+            if (!live) allCandidates.addAll(runMorphGradientPass(equalizedGray, skinMask, totalArea, paddedW, paddedH))
 
             // Pass 6: Multi-Channel (RGB + Saturation) Edge Combination
             if (!live) allCandidates.addAll(runMultiChannelPass(paddedSrc, skinMask, totalArea, paddedW, paddedH))
@@ -196,10 +204,13 @@ class DocumentDetector {
                     message = "Boundary detected. Check the corners."
                 )
             } else {
-                val suggestion = bestPts?.takeIf { bestScore >= 0.30f }?.map { point ->
-                    PointF(((point.x - BORDER_PAD) * originalW / procW).toFloat().coerceIn(0f, (originalW - 1).toFloat()),
-                        ((point.y - BORDER_PAD) * originalH / procH).toFloat().coerceIn(0f, (originalH - 1).toFloat()))
+                val rawSuggestion = bestPts?.takeIf { bestScore >= 0.20f }?.map { point ->
+                    PointF(
+                        ((point.x - BORDER_PAD) * originalW / procW).toFloat().coerceIn(0f, (originalW - 1).toFloat()),
+                        ((point.y - BORDER_PAD) * originalH / procH).toFloat().coerceIn(0f, (originalH - 1).toFloat())
+                    )
                 }?.let { orderCorners(it) }?.takeIf { CropGeometry.valid(it, originalW, originalH) }
+                val suggestion = rawSuggestion?.let { if (!live) BoundaryRefiner.refine(bitmap, it) else it }
                 Log.w(TAG, "Boundary needs review: score=$bestScore candidates=${allCandidates.size} hasSuggestion=${suggestion != null}")
                 DetectionResult(
                     success = false,
