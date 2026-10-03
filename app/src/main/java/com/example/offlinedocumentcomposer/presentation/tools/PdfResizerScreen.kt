@@ -421,13 +421,14 @@ class PdfResizerViewModel(application: Application) : AndroidViewModel(applicati
             val targetW = (w * scale).toInt().coerceAtLeast(1)
             val targetH = (h * scale).toInt().coerceAtLeast(1)
 
-            // Optimized memory allocation with RGB_565 (50% RAM savings)
-            val bmp = Bitmap.createBitmap(targetW, targetH, Bitmap.Config.RGB_565)
+            // Destination bitmap for PdfRenderer requires ARGB_8888
+            val bmp = Bitmap.createBitmap(targetW, targetH, Bitmap.Config.ARGB_8888)
             val canvas = Canvas(bmp)
             canvas.drawColor(AndroidColor.WHITE)
             page.render(bmp, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
             bmp
         } catch (e: Exception) {
+            android.util.Log.e("PdfResizerScreen", "Failed to render page preview", e)
             null
         } finally {
             try { page?.close() } catch (_: Exception) {}

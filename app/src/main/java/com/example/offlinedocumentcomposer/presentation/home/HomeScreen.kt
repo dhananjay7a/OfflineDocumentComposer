@@ -1,5 +1,6 @@
 package com.example.offlinedocumentcomposer.presentation.home
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -7,6 +8,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.CallSplit
+import androidx.compose.material.icons.automirrored.filled.MergeType
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -17,6 +20,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -31,7 +35,11 @@ fun HomeScreen(
     onOpenScanner: () -> Unit,
     onOpenPdfResizer: () -> Unit,
     onOpenPassportPhoto: () -> Unit,
-    onOpenImageResizer: () -> Unit
+    onOpenImageResizer: () -> Unit,
+    onOpenPdfMerge: () -> Unit,
+    onOpenPdfSplit: () -> Unit,
+    onOpenPdfOrganize: () -> Unit,
+    onOpenPdfSign: () -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -201,12 +209,90 @@ fun HomeScreen(
                 }
             }
 
+            // PDF Tools Suite (2x2 Grid)
+            item {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(top = 4.dp)
+                    ) {
+                        Surface(
+                            shape = CircleShape,
+                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
+                            modifier = Modifier.size(28.dp)
+                        ) {
+                            Icon(
+                                Icons.Default.PictureAsPdf,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.padding(6.dp)
+                            )
+                        }
+                        Spacer(Modifier.width(8.dp))
+                        Text(
+                            text = "PDF Tools Suite",
+                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                        )
+                    }
+
+                    // Row 1: Merge & Split
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        PdfToolGridCard(
+                            icon = Icons.AutoMirrored.Filled.MergeType,
+                            iconTint = Color(0xFF0284C7),
+                            iconBg = Color(0xFFE0F2FE),
+                            title = "Merge PDFs",
+                            subtitle = "Combine files",
+                            modifier = Modifier.weight(1f),
+                            onClick = onOpenPdfMerge
+                        )
+                        PdfToolGridCard(
+                            icon = Icons.AutoMirrored.Filled.CallSplit,
+                            iconTint = Color(0xFFD97706),
+                            iconBg = Color(0xFFFEF3C7),
+                            title = "Split PDF",
+                            subtitle = "Extract pages/range",
+                            modifier = Modifier.weight(1f),
+                            onClick = onOpenPdfSplit
+                        )
+                    }
+
+                    // Row 2: Organize & Sign/Edit
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        PdfToolGridCard(
+                            icon = Icons.Default.ViewAgenda,
+                            iconTint = Color(0xFF7C3AED),
+                            iconBg = Color(0xFFF3E8FF),
+                            title = "Organize Pages",
+                            subtitle = "Reorder & rotate",
+                            modifier = Modifier.weight(1f),
+                            onClick = onOpenPdfOrganize
+                        )
+                        PdfToolGridCard(
+                            icon = Icons.Default.Draw,
+                            iconTint = Color(0xFF059669),
+                            iconBg = Color(0xFFD1FAE5),
+                            title = "Sign & Edit PDF",
+                            subtitle = "Draw sign, add text",
+                            modifier = Modifier.weight(1f),
+                            onClick = onOpenPdfSign
+                        )
+                    }
+                }
+            }
+
             // Quick Actions Section Header
             item {
                 Text(
-                    text = "Quick Tools",
+                    text = "Document & Photo Tools",
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                    modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
+                    modifier = Modifier.padding(top = 4.dp, bottom = 2.dp)
                 )
             }
 
@@ -251,7 +337,7 @@ fun HomeScreen(
                 )
             }
 
-            // Action Cards
+            // Other Action Cards
             item {
                 HomeActionCard(
                     icon = Icons.Default.Crop,
@@ -288,6 +374,59 @@ fun HomeScreen(
             item {
                 Spacer(modifier = Modifier.height(16.dp))
             }
+        }
+    }
+}
+
+@Composable
+fun PdfToolGridCard(
+    icon: ImageVector,
+    iconTint: Color,
+    iconBg: Color,
+    title: String,
+    subtitle: String,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = modifier
+            .clip(RoundedCornerShape(16.dp))
+            .clickable(onClick = onClick),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(14.dp)
+        ) {
+            Surface(
+                shape = RoundedCornerShape(10.dp),
+                color = iconBg,
+                modifier = Modifier.size(40.dp)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(imageVector = icon, contentDescription = null, tint = iconTint, modifier = Modifier.size(22.dp))
+                }
+            }
+            Spacer(modifier = Modifier.height(10.dp))
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = subtitle,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontSize = 11.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
         }
     }
 }

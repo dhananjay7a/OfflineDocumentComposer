@@ -18,6 +18,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -141,7 +143,32 @@ fun AppNavigation() {
                 onOpenScanner = { navController.navigate("scanner") },
                 onOpenPdfResizer = { navController.navigate("pdf_resizer") },
                 onOpenPassportPhoto = { navController.navigate("passport_photo") },
-                onOpenImageResizer = { navController.navigate("image_resizer") }
+                onOpenImageResizer = { navController.navigate("image_resizer") },
+                onOpenPdfMerge = { navController.navigate("pdf_merge") },
+                onOpenPdfSplit = { navController.navigate("pdf_split") },
+                onOpenPdfOrganize = { navController.navigate("pdf_organize") },
+                onOpenPdfSign = { navController.navigate("pdf_sign") }
+            )
+        }
+
+        composable("pdf_merge") {
+            com.example.offlinedocumentcomposer.presentation.tools.PdfMergeScreen(
+                onBack = { navController.popBackStack() }
+            )
+        }
+        composable("pdf_split") {
+            com.example.offlinedocumentcomposer.presentation.tools.PdfSplitScreen(
+                onBack = { navController.popBackStack() }
+            )
+        }
+        composable("pdf_organize") {
+            com.example.offlinedocumentcomposer.presentation.tools.PdfOrganizeScreen(
+                onBack = { navController.popBackStack() }
+            )
+        }
+        composable("pdf_sign") {
+            com.example.offlinedocumentcomposer.presentation.tools.PdfSignEditScreen(
+                onBack = { navController.popBackStack() }
             )
         }
 
@@ -474,7 +501,7 @@ fun PhotoIngestScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 }
             )
@@ -625,7 +652,7 @@ fun PhotoIngestScreen(
             ) {
                 Text("Proceed to Edge Detection", fontWeight = FontWeight.Bold, color = Color.White)
                 Spacer(modifier = Modifier.width(8.dp))
-                Icon(Icons.Default.ArrowForward, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
+                Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
             }
         }
     }
@@ -641,7 +668,7 @@ fun SettingsScreen(navController: NavController) {
                 title = { Text("Privacy & Settings") },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 }
             )
